@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SimpleNote</string>
+    <string name="action_logout">logout</string>
+    <string name="lorem">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ante ante, efficitur in malesuada ac, interdum vitae mi. Vestibulum at lorem justo. Mauris rutrum est vel libero egestas fermentum. Nullam aliquet diam arcu, lacinia pellentesque libero egestas id. Nulla feugiat ligula ut velit lacinia, a fermentum purus pulvinar. Interdum et malesuada fames ac ante ipsum primis in faucibus. Fusce aliquam mattis sapien, in maximus quam dapibus sit amet. Suspendisse vel ligula sit amet quam facilisis euismod. Morbi vitae ullamcorper felis.
+
+Proin venenatis posuere ultrices. Nulla bibendum lacus a aliquet lacinia. Etiam volutpat ex ut dolor condimentum tempus. Integer porta augue non neque interdum egestas. Nulla facilisi. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Quisque semper tincidunt felis quis tempor. Aenean eget arcu neque. Curabitur laoreet tristique sem non dignissim. Nulla aliquam ut erat ultricies efficitur. Sed velit nisi, ultrices nec urna et, tempor ornare urna. Sed sodales scelerisque lacinia. Etiam ac rutrum lectus, a faucibus tellus. Fusce a auctor arcu, id tincidunt ligula. Integer blandit, sem in facilisis imperdiet, augue mi interdum risus, nec sollicitudin dolor turpis ac ipsum.</string>
+    <string name="send">Send</string>
+    <string name="delete">Delete</string>
+    <string name="note_field_hint">Note</string>
+    <string name="save">Save</string>
+    <string name="title">Title</string>
+</resources>
