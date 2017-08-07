@@ -9,12 +9,16 @@ import android.widget.EditText;
 
 public class NoteEditorActivity extends AppCompatActivity {
 
-    public static final int RC_NOTE = 0x001;
+    public static final int RC_NOTE = 0x010;
     public static final String NOTE_KEY = "NOTE";
+
+    //region Member attributes
     private EditText mNoteField;
     private EditText mNoteTitle;
     private Note mNote;
+    //endregion
 
+    //region Methods responsible for handling the activity's lifecycle
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +41,9 @@ public class NoteEditorActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.note_editor_menu, menu);
         return true;
     }
+    //endregion -- end --
 
+    //region Methods responsible for handling events.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -52,10 +58,17 @@ public class NoteEditorActivity extends AppCompatActivity {
             }break;
 
             case(R.id.action_send):{
-                //TODO: Send note
+                Note.sendNote(this, getNote());
             }break;
         }
         return super.onOptionsItemSelected(item);
+    }
+    //endregion -- end --
+
+    public Note getNote() {
+        String name = mNoteTitle.getText().toString();
+        String text = mNoteField.getText().toString();
+        return new Note(name, text);
     }
 
     public static void startActivity(AppCompatActivity context){
@@ -68,4 +81,5 @@ public class NoteEditorActivity extends AppCompatActivity {
         launchIntent.putExtra("NOTE", note);
         context.startActivityForResult(launchIntent, RC_NOTE);
     }
+
 }

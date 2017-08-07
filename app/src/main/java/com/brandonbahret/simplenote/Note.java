@@ -1,5 +1,8 @@
 package com.brandonbahret.simplenote;
 
+import android.app.Activity;
+import android.content.Intent;
+
 import java.io.Serializable;
 
 /**
@@ -21,6 +24,19 @@ public class Note implements Serializable {
         this.text = text;
     }
 
+    public static void sendNote(Activity context, Note note) {
+        try {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, note.getName());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, note.getText());
+            context.startActivity(Intent.createChooser(shareIntent, "Share with..."));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //region Getters & Setters
     public String getName() {
         return name;
     }
@@ -36,4 +52,5 @@ public class Note implements Serializable {
     public void setText(String text) {
         this.text = text;
     }
+    //endregion
 }

@@ -15,10 +15,13 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    //region Member attributes
     private ActivityMainBinding ui;
     private ArrayList<Note> mNotes;
     private NoteAdapter mNoteAdapter;
+    //endregion
 
+    //region Methods for handling the activity's lifecycle
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,10 +30,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(ui.toolbar);
 
         mNotes = new ArrayList<>();
-        mNotes.add(new Note("one", "hello world"));
-        mNotes.add(new Note("two", "hello world"));
-        mNotes.add(new Note("three", "hello world"));
-        mNotes.add(new Note("four", "hello world"));
+        String lorem = getString(R.string.lorem);
+        mNotes.add(new Note("Title 1", lorem));
+        mNotes.add(new Note("Title 2", lorem));
+        mNotes.add(new Note("Title 3", lorem));
+        mNotes.add(new Note("Title 4", lorem));
         mNoteAdapter = new NoteAdapter(this, mNotes);
 
         ui.content.noteContainer.setItemAnimator(new DefaultItemAnimator());
@@ -40,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
         ui.newNoteFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Open note editor activity
                 NoteEditorActivity.startActivity(MainActivity.this);
             }
         });
@@ -53,15 +56,13 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    //endregion -- end --
 
+    //region Methods for handling events
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout) {
             //TODO: log out from firebase
             return true;
@@ -69,5 +70,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    //endregion -- end --
 
 }

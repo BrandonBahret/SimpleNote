@@ -69,7 +69,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
                     }break;
 
                     case(R.id.action_send):{
-                        //TODO: Send note
+                        Note.sendNote(mContext, note);
                     }break;
                 }
                 return false;
@@ -79,7 +79,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.noteContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Open note editor activity for note
                 NoteEditorActivity.startActivity(mContext, note);
             }
         });

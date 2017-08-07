@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/title_text_edit_background"
-        android:hint="@string/title"
+        android:hint="@string/note_editor_title_hint"
         android:inputType="text"
         android:padding="16dp"
         android:textSize="20sp"
@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        android:hint="@string/note_field_hint"
+        android:hint="@string/note_editor_text_hint"
         android:inputType="textMultiLine"
         android:padding="16dp"/>
 
