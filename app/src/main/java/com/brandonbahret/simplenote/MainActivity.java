@@ -13,8 +13,6 @@ import android.view.View;
 
 import com.brandonbahret.simplenote.databinding.ActivityMainBinding;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -99,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
         mNotes = new ArrayList<>();
         mNoteAdapter = new NoteAdapter(this, mUserID, mNotes);
 
+        if (mNotes.isEmpty()) {
+            findViewById(R.id.no_notes_layout).setVisibility(View.VISIBLE);
+        }
+
         ui.content.noteContainer.setItemAnimator(new DefaultItemAnimator());
         ui.content.noteContainer.setLayoutManager(new LinearLayoutManager(this));
         ui.content.noteContainer.setAdapter(mNoteAdapter);
@@ -111,10 +113,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startSignInActivity() {List<AuthUI.IdpConfig> authProviders = Arrays.asList(
-            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-            new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build()
-    );
+    private void startSignInActivity() {
+        List<AuthUI.IdpConfig> authProviders = Arrays.asList(
+                new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
+                new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build()
+        );
 
         startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
@@ -139,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == RC_LOGIN && resultCode == RESULT_OK){
+        if (requestCode == RC_LOGIN) {
             if (resultCode == RESULT_OK) {
 
             }
@@ -156,14 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_logout) {
             // log out from firebase
-            AuthUI.getInstance()
-                    .signOut(this)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        public void onComplete(@NonNull Task<Void> task) {
-                            // user is now signed out
-                            startSignInActivity();
-                        }
-                    });
+            AuthUI.getInstance().signOut(this);
 
             return true;
         }

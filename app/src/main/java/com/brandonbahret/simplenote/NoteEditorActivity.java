@@ -12,7 +12,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class NoteEditorActivity extends AppCompatActivity {
 
-    public static final int RC_NOTE = 0x010;
+    public static final int RC_NOTE = 0x100;
     public static final String NOTE_KEY = "NOTE";
     private static final String USER_ID_KEY = "USER_ID";
 

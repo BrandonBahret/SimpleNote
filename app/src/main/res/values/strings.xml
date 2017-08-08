@@ -14,5 +14,6 @@ Proin venenatis posuere ultrices. Nulla bibendum lacus a aliquet lacinia. Etiam 
     <string name="action_send">Send</string>
     <string name="action_delete">Delete</string>
     <string name="action_save">Save</string>
+    <string name="no_notes_found">No Notes Found</string>
 
 </resources>
