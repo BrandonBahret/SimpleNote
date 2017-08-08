@@ -22,6 +22,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     //region Member attributes
     private ArrayList<Note> mNotes;
     private AppCompatActivity mContext;
+    private String mUserID;
     //endregion
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
@@ -38,7 +39,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         }
     }
 
-    public NoteAdapter(AppCompatActivity context, ArrayList<Note> notes) {
+    public NoteAdapter(AppCompatActivity context, String firebaseUserId, ArrayList<Note> notes) {
+        mUserID = firebaseUserId;
         mContext = context;
         mNotes = notes;
     }
@@ -79,7 +81,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.noteContent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NoteEditorActivity.startActivity(mContext, note);
+                NoteEditorActivity.startActivity(mContext, mUserID, note);
             }
         });
 

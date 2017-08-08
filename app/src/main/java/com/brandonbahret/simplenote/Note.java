@@ -14,15 +14,23 @@ public class Note implements Serializable {
 
     private String name;
     private String text;
+    private String pushId;
+
+    //region Constructors
+    public Note(String name, String text, String pushId) {
+        this.name = name;
+        this.text = text;
+        this.pushId = pushId;
+    }
+
+    public Note(String name, String text) {
+        this(name, text, null);
+    }
 
     public Note(){
         // Required for firebase
     }
-
-    public Note(String name, String text) {
-        this.name = name;
-        this.text = text;
-    }
+    //endregion
 
     public static void sendNote(Activity context, Note note) {
         try {

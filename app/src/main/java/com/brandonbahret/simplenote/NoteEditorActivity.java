@@ -7,15 +7,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class NoteEditorActivity extends AppCompatActivity {
 
     public static final int RC_NOTE = 0x010;
     public static final String NOTE_KEY = "NOTE";
+    private static final String USER_ID_KEY = "USER_ID";
 
     //region Member attributes
     private EditText mNoteField;
     private EditText mNoteTitle;
-    private Note mNote;
+    private Note mNote = new Note();
+    private String mUserID;
+
+    private FirebaseDatabase mFireDatabase;
+    private DatabaseReference mFireNotesRef;
     //endregion
 
     //region Methods responsible for handling the activity's lifecycle
@@ -23,16 +31,22 @@ public class NoteEditorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_editor);
+
         mNoteField = (EditText)findViewById(R.id.note_field);
         mNoteTitle = (EditText)findViewById(R.id.note_title);
         mNoteField.requestFocus();
 
         Intent data = getIntent();
-        if(data.hasExtra(NOTE_KEY)){
+        mUserID = data.getStringExtra(USER_ID_KEY);
+
+        if(data.hasExtra(NOTE_KEY)) {
             mNote = (Note) data.getSerializableExtra(NOTE_KEY);
             mNoteField.setText(mNote.getText());
             mNoteTitle.setText(mNote.getName());
         }
+
+        mFireDatabase = FirebaseDatabase.getInstance();
+        mFireNotesRef = mFireDatabase.getReference().child("users/"+mUserID+"/notes");
     }
 
     @Override
@@ -55,6 +69,7 @@ public class NoteEditorActivity extends AppCompatActivity {
 
             case(R.id.action_save):{
                 //TODO: Save note in the database
+                mFireNotesRef.push().setValue(getNote());
             }break;
 
             case(R.id.action_send):{
@@ -68,17 +83,21 @@ public class NoteEditorActivity extends AppCompatActivity {
     public Note getNote() {
         String name = mNoteTitle.getText().toString();
         String text = mNoteField.getText().toString();
-        return new Note(name, text);
+        mNote.setName(name);
+        mNote.setText(text);
+        return mNote;
     }
 
-    public static void startActivity(AppCompatActivity context){
+    public static void startActivity(AppCompatActivity context, String userId){
         Intent launchIntent = new Intent(context, NoteEditorActivity.class);
+        launchIntent.putExtra(USER_ID_KEY, userId);
         context.startActivityForResult(launchIntent, RC_NOTE);
     }
 
-    public static void startActivity(AppCompatActivity context, Note note){
+    public static void startActivity(AppCompatActivity context, String userId, Note note){
         Intent launchIntent = new Intent(context, NoteEditorActivity.class);
-        launchIntent.putExtra("NOTE", note);
+        launchIntent.putExtra(NOTE_KEY, note);
+        launchIntent.putExtra(USER_ID_KEY, userId);
         context.startActivityForResult(launchIntent, RC_NOTE);
     }
 
