@@ -29,7 +29,6 @@
             android:fadingEdgeLength="25dp"
             android:padding="16dp"
             android:requiresFadingEdge="vertical"
-            android:text="@string/lorem"
             android:textSize="16sp"/>
 
         <android.support.v7.widget.Toolbar

@@ -6,13 +6,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class NoteEditorActivity extends AppCompatActivity {
 
     public static final int RC_NOTE = 0x100;
+    String DELETE_NOTE_TAG = "confirm-deletion";
     public static final String NOTE_KEY = "NOTE";
     private static final String USER_ID_KEY = "USER_ID";
 
@@ -22,7 +25,7 @@ public class NoteEditorActivity extends AppCompatActivity {
     private Note mNote = new Note();
     private String mUserID;
 
-    private FirebaseDatabase mFireDatabase;
+    FirebaseDatabase mFireDatabase;
     private DatabaseReference mFireNotesRef;
     //endregion
 
@@ -32,21 +35,23 @@ public class NoteEditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_editor);
 
-        mNoteField = (EditText)findViewById(R.id.note_field);
-        mNoteTitle = (EditText)findViewById(R.id.note_title);
+        mNoteField = (EditText) findViewById(R.id.note_field);
+        mNoteTitle = (EditText) findViewById(R.id.note_title);
         mNoteField.requestFocus();
 
         Intent data = getIntent();
         mUserID = data.getStringExtra(USER_ID_KEY);
 
-        if(data.hasExtra(NOTE_KEY)) {
+        if (data.hasExtra(NOTE_KEY)) {
             mNote = (Note) data.getSerializableExtra(NOTE_KEY);
             mNoteField.setText(mNote.getText());
             mNoteTitle.setText(mNote.getName());
         }
 
-        mFireDatabase = FirebaseDatabase.getInstance();
-        mFireNotesRef = mFireDatabase.getReference().child("users/"+mUserID+"/notes");
+        mFireDatabase = FirebaseUtils.getDatabase();
+        mFireNotesRef = mFireDatabase.getReference().child("users/" + mUserID + "/notes");
+
+        ConfirmationDialog.resetOnYesClickListener(this, DELETE_NOTE_TAG, onYesDeleteNote);
     }
 
     @Override
@@ -58,23 +63,69 @@ public class NoteEditorActivity extends AppCompatActivity {
     //endregion -- end --
 
     //region Methods responsible for handling events.
+    ConfirmationDialog.MyClickListener onYesDeleteNote = new ConfirmationDialog.MyClickListener() {
+        @Override
+        public void onClick(Bundle extras) {
+            mFireDatabase.getReference("users/" + mUserID + "/notes/" + mNote.getPushId())
+                    .removeValue()
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(NoteEditorActivity.this, R.string.deletion_success, Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    });
+        }
+    };
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        switch(id){
-            case(R.id.action_delete):{
-                //TODO: Delete the note from the database
-            }break;
+        switch (id) {
+            case (R.id.action_delete): {
+                if (mNote.getPushId() != null) {
+                    new ConfirmationDialog()
+                            .setTitle(R.string.note_deletion_dialog_title)
+                            .setMessage(R.string.action_warning)
+                            .setOnYesClickListener(onYesDeleteNote)
+                            .show(getSupportFragmentManager(), DELETE_NOTE_TAG);
 
-            case(R.id.action_save):{
-                //TODO: Save note in the database
-                mFireNotesRef.push().setValue(getNote());
-            }break;
+                }
+            }
+            break;
 
-            case(R.id.action_send):{
+            case (R.id.action_save): {
+                if (mNote.getPushId() == null) {
+                    // If note isn't in database yet, add it
+                    DatabaseReference ref = mFireNotesRef.push();
+                    mNote.setPushId(ref.getKey());
+                    ref.setValue(getNote())
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(NoteEditorActivity.this, R.string.save_success, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+                else {
+                    // If note is in the database already, update it
+                    mFireNotesRef.child(mNote.getPushId())
+                            .setValue(getNote())
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(NoteEditorActivity.this, R.string.save_success, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+            break;
+
+            case (R.id.action_send): {
                 Note.sendNote(this, getNote());
-            }break;
+            }
+            break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -88,13 +139,13 @@ public class NoteEditorActivity extends AppCompatActivity {
         return mNote;
     }
 
-    public static void startActivity(AppCompatActivity context, String userId){
+    public static void startActivity(AppCompatActivity context, String userId) {
         Intent launchIntent = new Intent(context, NoteEditorActivity.class);
         launchIntent.putExtra(USER_ID_KEY, userId);
         context.startActivityForResult(launchIntent, RC_NOTE);
     }
 
-    public static void startActivity(AppCompatActivity context, String userId, Note note){
+    public static void startActivity(AppCompatActivity context, String userId, Note note) {
         Intent launchIntent = new Intent(context, NoteEditorActivity.class);
         launchIntent.putExtra(NOTE_KEY, note);
         launchIntent.putExtra(USER_ID_KEY, userId);

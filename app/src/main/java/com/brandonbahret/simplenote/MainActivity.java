@@ -10,34 +10,35 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.brandonbahret.simplenote.databinding.ActivityMainBinding;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_LOGIN = 0x010;
+    final String DELETE_NOTE_TAG = "confirm-deletion";
+    final String NOTE_TAG = "NOTE";
 
     //region Member attributes
     private ActivityMainBinding ui;
-    private ArrayList<Note> mNotes;
-    private NoteAdapter mNoteAdapter;
+    private FirebaseNoteAdapter mNoteAdapter;
 
     private String mUserID;
-
     private FirebaseAuth mFireAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private FirebaseDatabase mFireDatabase;
     private DatabaseReference mFireNotesRef;
-    //endregion
+    //endregion -- end --
 
     //region Methods for handling the activity's lifecycle
     @Override
@@ -48,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(ui.toolbar);
 
         //INIT: Firebase components
+        mFireDatabase = FirebaseUtils.getDatabase();
         mFireAuth = FirebaseAuth.getInstance();
-        mFireDatabase = FirebaseDatabase.getInstance();
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -81,12 +82,16 @@ public class MainActivity extends AppCompatActivity {
         if (mAuthStateListener != null) {
             mFireAuth.removeAuthStateListener(mAuthStateListener);
         }
-//        detachDatabaseReadListener();
-//        mMessageAdapter.clear();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mNoteAdapter != null) mNoteAdapter.cleanup();
     }
 
     private void onSignOutCleanUp() {
-
+        if(mNoteAdapter != null) mNoteAdapter.cleanup();
     }
 
     private void onSignInInit(String userID) {
@@ -94,12 +99,28 @@ public class MainActivity extends AppCompatActivity {
         String userPath = "users/" + userID + "/notes";
         mFireNotesRef = mFireDatabase.getReference().child(userPath);
 
-        mNotes = new ArrayList<>();
-        mNoteAdapter = new NoteAdapter(this, mUserID, mNotes);
+        mNoteAdapter = new FirebaseNoteAdapter(this, mUserID, mFireNotesRef);
+        mNoteAdapter.setOnDataChangedListener(new FirebaseNoteAdapter.OnDataChangedListener() {
+            @Override
+            public void OnDataChanged() {
+                ui.progressBar.setVisibility(View.GONE);
+                int visibility = mNoteAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE;
+                findViewById(R.id.no_notes_layout).setVisibility(visibility);
+            }
+        });
 
-        if (mNotes.isEmpty()) {
-            findViewById(R.id.no_notes_layout).setVisibility(View.VISIBLE);
-        }
+        mNoteAdapter.setOnNoteDeleteListener(new FirebaseNoteAdapter.OnDeleteNoteListener() {
+            @Override
+            public void OnNoteDelete(Note note, String userId) {
+                ConfirmationDialog dialog = new ConfirmationDialog()
+                        .setTitle(R.string.note_deletion_dialog_title)
+                        .setMessage(R.string.action_warning)
+                        .setOnYesClickListener(onYesDeleteNoteListener);
+                dialog.mDialogState.extras.putSerializable(NOTE_TAG, note);
+                dialog.show(getSupportFragmentManager(), DELETE_NOTE_TAG);
+            }
+        });
+
 
         ui.content.noteContainer.setItemAnimator(new DefaultItemAnimator());
         ui.content.noteContainer.setLayoutManager(new LinearLayoutManager(this));
@@ -111,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
                 NoteEditorActivity.startActivity(MainActivity.this, mUserID);
             }
         });
+
+        ConfirmationDialog.resetOnYesClickListener(MainActivity.this, DELETE_NOTE_TAG, onYesDeleteNoteListener);
     }
 
     private void startSignInActivity() {
@@ -122,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
                         .setTheme(R.style.AppThemeFirebase)
-                        .setLogo(R.drawable.ic_file_notes_document)
+                        .setLogo(R.mipmap.ic_launcher_round)
                         .setIsSmartLockEnabled(false)
                         .setAvailableProviders(authProviders)
                         .build(),
@@ -142,14 +165,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_LOGIN) {
-            if (resultCode == RESULT_OK) {
 
-            }
-            else {
-                finish();
-            }
-        }
+        // If login was anything but successful, then exit the app.
+        if (requestCode == RC_LOGIN && resultCode != RESULT_OK) finish();
 
     }
 
@@ -166,6 +184,24 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    ConfirmationDialog.MyClickListener onYesDeleteNoteListener = new ConfirmationDialog.MyClickListener() {
+        @Override
+        public void onClick(Bundle extras) {
+            Note note = (Note) extras.getSerializable(NOTE_TAG);
+            if (note != null) {
+                mFireNotesRef.child(note.getPushId())
+                        .removeValue()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(MainActivity.this, R.string.deletion_success, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+
+        }
+    };
     //endregion -- end --
 
 }

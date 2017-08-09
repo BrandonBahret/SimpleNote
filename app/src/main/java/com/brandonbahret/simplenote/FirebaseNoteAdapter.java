@@ -3,26 +3,36 @@ package com.brandonbahret.simplenote;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.Query;
 
 /**
- * Created by Brandon on 8/6/2017.
- * RecyclerView Adapter class for notes.
+ * Created by Brandon on 8/8/2017.
+ * An implementation of the firebase-ui RecyclerAdapter.
  */
 
-public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder> {
+public class FirebaseNoteAdapter extends FirebaseRecyclerAdapter<Note, FirebaseNoteAdapter.NoteViewHolder> {
 
     //region Member attributes
-    private ArrayList<Note> mNotes;
     private AppCompatActivity mContext;
     private String mUserID;
+    //endregion
+
+    //region Callbacks for view events.
+    interface OnDeleteNoteListener {
+        void OnNoteDelete(Note note, String userId);
+    }
+    private OnDeleteNoteListener mOnNoteDeleteClickedListener;
+
+    interface OnDataChangedListener {
+        void OnDataChanged();
+    }
+    private OnDataChangedListener mOnDataChangedListener;
     //endregion
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
@@ -39,24 +49,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         }
     }
 
-    public NoteAdapter(AppCompatActivity context, String firebaseUserId, ArrayList<Note> notes) {
-        mUserID = firebaseUserId;
-        mContext = context;
-        mNotes = notes;
+    public FirebaseNoteAdapter(AppCompatActivity context, String firebaseUserId, Query query){
+        super(Note.class, R.layout.note_view_layout, FirebaseNoteAdapter.NoteViewHolder.class, query);
+        this.mContext = context;
+        this.mUserID = firebaseUserId;
     }
 
     @Override
-    public NoteViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.note_view_layout, parent, false);
-
-        return new NoteViewHolder(itemView);
-    }
-
-    @Override
-    public void onBindViewHolder(NoteViewHolder holder, int position) {
-        final Note note = mNotes.get(position);
-
+    protected void populateViewHolder(FirebaseNoteAdapter.NoteViewHolder holder, final Note note, int position) {
+        note.setPushId(getRef(position).getKey());
         holder.text.setText(note.getText());
         holder.toolbar.setTitle(note.getName());
 
@@ -67,11 +68,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
                 int id = item.getItemId();
                 switch (id){
                     case(R.id.action_delete):{
-                        //TODO: Delete note from database
-                    }break;
+                        if(mOnNoteDeleteClickedListener != null) {
+                            mOnNoteDeleteClickedListener.OnNoteDelete(note, mUserID);
+                        }
 
-                    case(R.id.action_send):{
-                        Note.sendNote(mContext, note);
                     }break;
                 }
                 return false;
@@ -84,12 +84,21 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
                 NoteEditorActivity.startActivity(mContext, mUserID, note);
             }
         });
-
     }
 
     @Override
-    public int getItemCount() {
-        return mNotes.size();
+    public void onDataChanged() {
+        super.onDataChanged();
+        mOnDataChangedListener.OnDataChanged();
     }
+
+    public void setOnDataChangedListener(OnDataChangedListener listener){
+        mOnDataChangedListener = listener;
+    }
+
+    public void setOnNoteDeleteListener(OnDeleteNoteListener listener){
+        mOnNoteDeleteClickedListener = listener;
+    }
+
 
 }

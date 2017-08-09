@@ -21,6 +21,13 @@
                 app:popupTheme="@style/AppTheme.PopupOverlay"/>
         </android.support.design.widget.AppBarLayout>
 
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:progressTint="@android:color/white"
+            android:layout_gravity="center"
+            android:layout_width="100dp"
+            android:layout_height="100dp"/>
+
         <include
             android:id="@+id/content"
             layout="@layout/content_main"/>
