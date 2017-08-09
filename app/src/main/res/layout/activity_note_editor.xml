@@ -23,8 +23,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
+        android:gravity="top"
         android:hint="@string/note_editor_text_hint"
         android:inputType="textMultiLine"
-        android:padding="16dp"/>
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:verticalScrollbarPosition="right"
+        android:padding="16dp"
+        />
 
 </LinearLayout>
