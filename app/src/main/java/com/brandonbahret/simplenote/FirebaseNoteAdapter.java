@@ -67,6 +67,7 @@ public class FirebaseNoteAdapter extends FirebaseRecyclerAdapter<Note, FirebaseN
             holder.toolbar.inflateMenu(R.menu.note_view_menu);
         }
 
+
         holder.toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
